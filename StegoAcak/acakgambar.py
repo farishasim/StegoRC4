@@ -1,8 +1,11 @@
+from math import sqrt,log10
 import base64
 import argparse
 import io
 import PIL.Image as Image
 import prima
+import numpy as np
+import cv2
 
 #python acak.py encrypt ./lena.bmp 1leomaumakan
 #python acak.py decrypt ./stegonya.png
@@ -23,7 +26,6 @@ def listgambar(image):
     z1 = image.size[0]
     z2 = image.size[1]
     pixel = iter(image)
-    
     iterator = 0
 
     for i in range (round((z1*z2)/3)):
@@ -44,6 +46,7 @@ def prng(senarai, pesan, kunci):
     p = prima.driver(faktor)
     q = prima.driver(faktor)
     r = (p-1)*(q-1)
+    xo %= r
     while(found == False):
         e = 2
         while(e < 10 and found == False):
@@ -57,7 +60,7 @@ def prng(senarai, pesan, kunci):
             kandidat = xo
         else:
             kandidat = (hasil[i]**e)%r
-        while(kandidat in hasil):
+        while(kandidat in hasil or kandidat<=0):
             kandidat += hasil[-1]
             kandidat %= len(senarai)
         hasil.append(kandidat)
@@ -134,6 +137,11 @@ def encrypt(file, pesan, kunci):
             x += 1
         pixel_seed += 1
     imgbaru.save('stegonya.png')
+    print("Nilai PSNR adalah:",psnr(cv2.imread(file),cv2.imread("stegonya.png")))
+
+def psnr(imageawal,imageakhir):
+    rms = np.mean((imageawal - imageakhir) ** 2)
+    return 20*log10(255/rms)
 
 def decrypt(file, kunci):
     img = Image.open(file, 'r')
