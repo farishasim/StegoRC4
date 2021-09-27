@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StegoRC4</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        input {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Modified RC4 Cipher</h1>
+        <div id="choice-section">
+            <input id="encrypt-button" type="button" value="Encrypt">
+            <input id="decrypt-button" type="button" value="Decrypt">
+            <input id="file-encrypt-button" type="button" value="File Encrypt">
+            <input id="file-decrypt-button" type="button" value="File Decrypt">
+        </div>
+        <div id="input-section">
+
+        </div>
+        <div id="result-section">
+            {% if file_encrypt %}
+                <br><p>Your file is encrypted.</p>
+                <input id="get-file" type="button" value="Get Your File" onclick="location.href='/download/output'">
+            {% elif file_decrypt %}
+                <br><p>Your file is decrypted.</p>
+                <input id="get-file" type="button" value="Get Your File" onclick="location.href='/download/output'">
+            {% endif %}
+        </div><br><br>
+        <a href="../">Back</a>
+    </main>
+
+    <script>
+        $("#encrypt-button").click(() => {
+            const mode = "Plain";
+            $("#input-section").empty();
+            $("#result-section").empty();
+            prepare_input(mode);
+        });
+        $("#decrypt-button").click(() => {
+            const mode = "Cipher";
+            $("#input-section").empty();
+            $("#result-section").empty();
+            prepare_input(mode);
+        });
+        $("#file-encrypt-button").click(() => {
+            $("#input-section").empty();
+            $("#result-section").empty();
+            prepare_file_input("encrypt");
+        })
+        $("#file-decrypt-button").click(() => {
+            $("#input-section").empty();
+            $("#result-section").empty();
+            prepare_file_input("decrypt")
+        })
+        // $("#get-file").click(() => {
+        //     $.get('/download/output')
+        //     //     .done((data) => {
+        //     //     console.log(data);
+        //     // })
+        //     ;
+        // })
+        function prepare_input(mode) {
+            if (mode === "Cipher" || mode === "Plain") {
+                let input = '<input id="text-field" type="text" value="{{ filecontent }}"></input><br>';
+                input = `<br><label for="input-field">${mode} Text : </label><br>` + input;
+
+                let key = '<input id="key-field" type="text" ></input><br>';
+                key = `<label for="key-field">Key : </label><br>` + key;
+
+                let submit = '<input id="submit-button" type="button" value="Submit"></input>'
+                $("#input-section").append(input, key, submit);
+                $("#submit-button").click(() => {
+                    $("#result-section").empty();
+                    const route = (mode === "Cipher") ? "encrypt" : "decrypt";
+                    const text = $("#text-field").val();
+                    const key = $("#key-field").val();
+                    $.get("/rc4/" + route, {text: text, key:key}).done((data) => {
+                        const result = 
+                        `<br><label for="result-field">Result : </label><br>
+                        <br><div id="result-field">${data}</div>`
+                        $("#result-section").append(result)
+                    })
+                })
+            }
+        }
+        function prepare_file_input(mode) {
+            if (mode === "encrypt" || mode === "decrypt") {
+                const input = 
+                `<form action = "/rc4/file_${mode}" method = "POST" 
+                enctype = "multipart/form-data">
+                    <br><label for="key-field">Key : </label><br>
+                    <input id="key-field" type="text" name="key"></input><br>
+                    <br><label>Choose Your File: </label><br>
+                    <input type = "file" name = "file" />
+                    <input id="inputFile" type = "submit" value="Submit"/>
+                </form>`
+                $("#input-section").append(input);
+            }
+        }
+    </script>
+</body>
+</html>
