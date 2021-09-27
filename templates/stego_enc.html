@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Steganography</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <style>
+        input {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Enkripsi Pesan dengan Steganography</h1>
+        <div id="choice-section">
+            <input id="citra" type="button" value="Citra">
+            <input id="video" type="button" value="Video">
+        </div>
+        <div id="input-section">
+            <p>
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <ul>
+                    {% for message in messages %}
+                      <li>{{ message }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+                {% endwith %}
+            </p>
+        </div>
+        <div id="preview-section">
+            {% if filename %}
+                <div>
+                    <img src="{{ url_for('display_image', filename=filename) }}">
+                </div>
+            {% endif %}
+        </div>
+        <div id="result-section">
+            {% if encrypt %}
+                <br><p>File sudah dienkripsi.</p>
+                <input id="get-file" type="button" value="Get Your File" onclick="location.href='/download/output'">
+            {% elif decrypt %}
+                <br><p>File sudah didekripsi.</p>
+                <input id="get-file" type="button" value="Get Your File" onclick="location.href='/download/output'">
+            {% endif %}
+        </div><br><br>
+        <a href="../stegano">Back</a>
+    </main>
+
+    <script>
+        $("#citra").click(() => {
+            $("#input-section").empty();
+            $("#result-section").empty();
+            prepare_file_input("citra");
+        })
+        $("#video").click(() => {
+            $("#input-section").empty();
+            $("#result-section").empty();
+            prepare_file_input("video");
+        })
+        // $("#get-file").click(() => {
+        //     $.get('/download/output')
+        //     //     .done((data) => {
+        //     //     console.log(data);
+        //     // })
+        //     ;
+        // })
+        function prepare_file_input(mode) {
+            if (mode === "citra") {
+                const input = 
+                `<h3>File Citra</h3>
+                <form action = "/stegano/enkripsi" method = "POST" 
+                enctype = "multipart/form-data">
+                    <br><label for="key-field">Key : </label><br>
+                    <input id="key-field" type="text" name="key"></input><br>
+                    <br><label for="pesan-field">Pesan : </label><br>
+                    <input id="pesan-field" type="text" name="pesan"></input><br>
+                    <br><label>Choose Your File: </label><br>
+                    <input type = "file" name = "file" /><br>
+                    <input type="radio" name="sebaran" value="sekuensial">Sekuensial</input><br>
+                    <input type="radio" name="sebaran" value="acak">Acak</input>
+                    <br>
+                    <input type="radio" name="tipe_enc" value="tanpaenkripsi">Tanpa Enkripsi</input><br>
+                    <input type="radio" name="tipe_enc" value="denganenkripsi">Dengan Enkripsi</input>
+                    <br><br>
+                    <input id="inputFile" type = "submit" value="Submit"/>
+                </form>`
+                $("#input-section").append(input);
+            }
+        }
+    </script>
+</body>
+</html>

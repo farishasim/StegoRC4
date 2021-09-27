@@ -3,9 +3,9 @@ import base64
 import argparse
 import io
 import PIL.Image as Image
-import prima
 import numpy as np
 import cv2
+from . import prima
 
 #python acak.py encrypt ./lena.bmp 1leomaumakan
 #python acak.py decrypt ./stegonya.png
@@ -107,7 +107,7 @@ def stegoing(kode, gambar, seed, key):
         yield tempgambar[3:6]
         yield tempgambar[6:9]
 
-def encrypt(file, pesan, kunci):
+def encrypt(file, pesan, kunci, output):
     kode = "a" #kode acak
     img = Image.open(file, 'r')
     if (len(pesan) == 0):
@@ -136,8 +136,8 @@ def encrypt(file, pesan, kunci):
         else:
             x += 1
         pixel_seed += 1
-    imgbaru.save('stegonya.png')
-    print("Nilai PSNR adalah:",psnr(cv2.imread(file),cv2.imread("stegonya.png")))
+    imgbaru.save(output)
+    print("Nilai PSNR adalah:",psnr(cv2.imread(file),cv2.imread(output)))
 
 def psnr(imageawal,imageakhir):
     rms = np.mean((imageawal - imageakhir) ** 2)
@@ -217,6 +217,7 @@ if __name__ == '__main__':
     encrypt_parser.add_argument("file_input", help='Input Plain File')
     encrypt_parser.add_argument("pesan", help='Input Plain File')
     encrypt_parser.add_argument("kunci", help='Masukkan kuncinya')
+    encrypt_parser.add_argument("output", help='Masukkan nama dir output')
 
     decrypt_parser = subparsers.add_parser(
         "decrypt", help=decrypt.__doc__
@@ -226,6 +227,6 @@ if __name__ == '__main__':
     #parser.add_argument("command", help='Input command encrypt/decrypt')
     args = parser.parse_args()
     if(args.command == "encrypt"):
-        encrypt(args.file_input, args.pesan, args.kunci)
+        encrypt(args.file_input, args.pesan, args.kunci, args.output)
     elif(args.command == "decrypt"):
         print(decrypt(args.file_input, args.kunci))

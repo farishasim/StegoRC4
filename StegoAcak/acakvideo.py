@@ -5,7 +5,6 @@ import argparse
 import io
 import os
 import PIL.Image as Image
-import prima
 import numpy as np
 import cv2
 import shutil
@@ -14,6 +13,7 @@ import glob
 from natsort import natsorted
 from os.path import isfile, join
 import pathlib
+from . import prima
 
 #reference:
 # https://github.com/r9ht/Caesar-Cipher-Video-Steganography/blob/a51dae6259192a0fb943215a6c7259a48c574c13/functions.py#L12
