@@ -159,6 +159,7 @@ def stegoing(gambar, key, akhir):
                 gambar[-1] -= 1
         
         gambar = tuple(gambar)
+        #print(gambar)
         yield gambar[0:3]
         yield gambar[3:6]
         yield gambar[6:9]
@@ -167,11 +168,18 @@ def encrypt(dir, pesan, kunci):
     print("Mulai ekstraksi...")
     kode = "a" #kode acak
     pesan = str(kode) + pesan + "ÿ"
-    panjang_pesan = 90
+    panjang_pesan = 60
     pesannya =  pisahteks(pesan,panjang_pesan)
     jumlah_frame = len([name for name in os.listdir(dir) if os.path.isfile(os.path.join(dir, name))])
+    if(len(pesannya)>jumlah_frame):
+        return False
+    #print("jumlah frame",jumlah_frame)
     seedgambar = prng(jumlah_frame, len(pesannya), kunci)
     iterator = 0
+    #print(pesannya)
+    #print(seedgambar)
+
+    psnr_total = 0
     for i in range (len(pesannya)):
         img2 = Image.open(str(dir) +"/" + str(seedgambar[iterator]) + ".png", 'r')
         img = img2.getdata()
@@ -187,6 +195,8 @@ def encrypt(dir, pesan, kunci):
         else:
             akhir = False
 
+        #print(pesannya[i])
+        #print(stegoing(img, pesannya[i], akhir))
         for pixel in stegoing(img, pesannya[i], akhir):
             imgbaru.putpixel((x, y), pixel)
             if (x == lebar - 1):
@@ -194,9 +204,13 @@ def encrypt(dir, pesan, kunci):
                 y += 1
             else:
                 x += 1
+        a = cv2.imread(str(dir) +"/" + str(seedgambar[iterator]) + ".png")
         imgbaru.save(str(dir) +"/" + str(seedgambar[iterator]) + ".png", compress_level = 0)
+        b = cv2.imread(str(dir) +"/" + str(seedgambar[iterator]) + ".png")
+        psnr_total += psnr(a,b)
         iterator += 1
-    #print("Nilai PSNR adalah:",psnr(cv2.imread(file),cv2.imread("stegonya.png")))
+    print("Nilai PSNR Video adalah:", psnr_total//iterator)
+    return True
 
 def encrypt_driver(file_name, pesan, kunci):
     dir = "temp/"
@@ -210,35 +224,32 @@ def encrypt_driver(file_name, pesan, kunci):
     frame_extract(dir, os.path.join("citra",str(file_name)))
     print("Extract Video Selesai")
 
-    print("Extract audionya...")
-    #call(["ffmpeg", "-i", "citra/" + str(file_name), "-q:a", "0", "-map", "a", "temp/audio.mp3", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
-    video = VideoFileClip("citra/"+str(file_name))
-    video.audio.write_audiofile('./temp/audio.mp3')
-    print("Extract Audio Selesai")
+    if (encrypt(dir, pesan, kunci)):
+        print("Extract audionya...")
+        #call(["ffmpeg", "-i", "citra/" + str(file_name), "-q:a", "0", "-map", "a", "temp/audio.mp3", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
+        video = VideoFileClip("citra/"+str(file_name))
+        video.audio.write_audiofile('./temp/audio.mp3')
+        print("Extract Audio Selesai")
 
-    encrypt(dir, pesan, kunci)
+        print("Merging Gambarnya...")
+        capture = cv2.VideoCapture(os.path.join("citra",str(file_name))) # Stores OG Video into a Capture Window
+        fps = capture.get(cv2.CAP_PROP_FPS)
+        convert_frames_to_video(dir,"temp/video.avi",fps)
+        #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
+        #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
+        print("Merging gambar selesai")
 
-    print("Merging Gambarnya...")
-    capture = cv2.VideoCapture(os.path.join("citra",str(file_name))) # Stores OG Video into a Capture Window
-    fps = capture.get(cv2.CAP_PROP_FPS)
-    convert_frames_to_video(dir,"temp/video.avi",fps)
-    #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
-    #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
-    print("Merging gambar selesai")
-
-    print("Gabung Video dan Audionya")
-    #call(["ffmpeg", "-i", "temp/video.mov", "-i", "temp/audio.mp3", "-codec", "copy","citra/enc-" + str(file_name), "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT)
-    call(['ffmpeg',
-            '-i', "temp/video.avi",
-            '-i', "temp/audio.mp3",
-            '-y',
-            '-vcodec', 'copy',
-            '-acodec', 'copy',
-            "citra/hasil.avi"])
-    #clip = VideoFileClip("temp/video.avi")
-    #audioclip = AudioFileClip("temp/audio.mp3")
-    #videoclip = clip.set_audio(audioclip)
-    #clip.write_videofile("citra/enc-contoh.avi", codec='png')
+        print("Gabung Video dan Audionya")
+        #call(["ffmpeg", "-i", "temp/video.mov", "-i", "temp/audio.mp3", "-codec", "copy","citra/enc-" + str(file_name), "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT)
+        call(['ffmpeg',
+                '-i', "temp/video.avi",
+                '-i', "temp/audio.mp3",
+                '-y',
+                '-vcodec', 'copy',
+                '-acodec', 'copy',
+                "citra/hasil.avi"])
+    else:
+        print("Maaf enkripsi gagal, silahkan cek panjang pesan")
 
 def psnr(imageawal,imageakhir):
     rms = np.mean((imageawal - imageakhir) ** 2)
@@ -256,9 +267,9 @@ def decrypt(dir, kunci):
     for i in range (len(kunci)):
         xo += ord(kunci[i])
     xo %= jumlah_frame
+    #print("jumlah frame",jumlah_frame)
     found = False
-    selesai = False
-    faktor = round(jumlah_frame)**(0.5)
+    faktor = round((jumlah_frame)**(0.5))
 
     #Pembangkit bilangan acak pendekatan RSA
     p = prima.driver(faktor)
@@ -291,11 +302,14 @@ def decrypt(dir, kunci):
     kode = chr(int(teksbinary, 2))
 
     if (kode == "a"):
+        print("Dekripsi dilakukan secara acak")
         hasil = [0]
         k = 0
         while(True):
             frame_selesai = False
             img = video_frame[hasil[k]]
+            #print(hasil)
+            #print(pesan)
             img2 = Image.open(str(dir) +"/" + img , 'r')
             gambar = img2.getdata()
             pesan_per_frame = 0
@@ -312,13 +326,14 @@ def decrypt(dir, kunci):
                         teksbinary += '0'
                     else:
                         teksbinary += '1'
-                pesan += chr(int(teksbinary, 2))
-                pesan_per_frame += 1
                 if (teksbinary == "11111111"):
+                    #print("udah 11111111")
                     frame_selesai == True
                     return pesan
                     break
-                if(pesan_per_frame>90):
+                pesan += chr(int(teksbinary, 2))
+                pesan_per_frame += 1
+                if(pesan_per_frame>=60):
                     #if (gambar[-1] % 2 != 0):
                      #   return pesan
                     #else:
@@ -329,9 +344,14 @@ def decrypt(dir, kunci):
                 kandidat = xo
             else:
                 kandidat = (hasil[k]**e)%r
+
+            #if((kandidat in hasil) or kandidat<=0):
+                #print(kandidat)
             while((kandidat in hasil) or kandidat<=0):
                 kandidat += hasil[-1]
                 kandidat %= jumlah_frame
+            
+            #print(hasil[-5:])
             hasil.append(kandidat)
             k += 1
 
@@ -347,7 +367,7 @@ def decrypt_driver(file_name, kunci):
     print("Extract Video Selesai")
 
     pesan = decrypt(dir, kunci)
-    pesan2 = pesan[1:-1]
+    pesan2 = pesan[1:]
     return pesan2
 
 if __name__ == '__main__':
