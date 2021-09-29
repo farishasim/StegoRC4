@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>StegoRC4</title>
+    <title>Steganography</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <style>
         input {
@@ -11,22 +11,37 @@
 </head>
 <body>
     <main>
-        <h1>Modified RC4 Cipher</h1>
+        <h1>Dekripsi Pesan dengan Steganography</h1>
         <div id="choice-section">
-            <input id="encrypt-button" type="button" value="Encrypt">
-            <input id="decrypt-button" type="button" value="Decrypt">
-            <input id="file-encrypt-button" type="button" value="File Encrypt">
-            <input id="file-decrypt-button" type="button" value="File Decrypt">
+            <input id="citra" type="button" value="Citra">
+            <input id="video" type="button" value="Video">
         </div>
         <div id="input-section">
-
+            <p>
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    <ul>
+                    {% for message in messages %}
+                      <li>{{ message }}</li>
+                    {% endfor %}
+                    </ul>
+                  {% endif %}
+                {% endwith %}
+            </p>
+        </div>
+        <div id="preview-section">
+            {% if filename %}
+                <div>
+                    <img src="{{ url_for('display_dec_image', filename=filename) }}">
+                </div>
+            {% endif %}
         </div>
         <div id="result-section">
-            {% if file_encrypt %}
-                <br><p>Your file is encrypted.</p>
+            {% if encrypt %}
+                <br><p>File sudah didekripsi.</p>
                 <input id="get-file" type="button" value="Get Your File" onclick="location.href='/download/output'">
-            {% elif file_decrypt %}
-                <br><p>Your file is decrypted.</p>
+            {% elif decrypt %}
+                <br><p>File sudah didekripsi.</p>
                 <input id="get-file" type="button" value="Get Your File" onclick="location.href='/download/output'">
             {% endif %}
         </div><br><br>
@@ -34,27 +49,15 @@
     </main>
 
     <script>
-        $("#encrypt-button").click(() => {
-            const mode = "Plain";
+        $("#citra").click(() => {
             $("#input-section").empty();
             $("#result-section").empty();
-            prepare_input(mode);
-        });
-        $("#decrypt-button").click(() => {
-            const mode = "Cipher";
-            $("#input-section").empty();
-            $("#result-section").empty();
-            prepare_input(mode);
-        });
-        $("#file-encrypt-button").click(() => {
-            $("#input-section").empty();
-            $("#result-section").empty();
-            prepare_file_input("encrypt");
+            prepare_file_input("citra");
         })
-        $("#file-decrypt-button").click(() => {
+        $("#video").click(() => {
             $("#input-section").empty();
             $("#result-section").empty();
-            prepare_file_input("decrypt")
+            prepare_file_input("video");
         })
         // $("#get-file").click(() => {
         //     $.get('/download/output')
@@ -63,42 +66,65 @@
         //     // })
         //     ;
         // })
-        function prepare_input(mode) {
-            if (mode === "Cipher" || mode === "Plain") {
-                let input = '<input id="text-field" type="text" value="{{ filecontent }}"></input><br>';
-                input = `<br><label for="input-field">${mode} Text : </label><br>` + input;
-
-                let key = '<input id="key-field" type="text" ></input><br>';
-                key = `<label for="key-field">Key : </label><br>` + key;
-
-                let submit = '<input id="submit-button" type="button" value="Submit"></input>'
-                $("#input-section").append(input, key, submit);
+        function prepare_file_input(mode) {
+            if (mode === "citra") {
+                let input = 
+                `<h3>File Citra</h3>
+                <form action = "/stegano/dekripsi" method = "POST" 
+                enctype = "multipart/form-data">
+                    <br><label for="key-field">Key : </label><br>
+                    <input id="key-field" type="text" name="key"></input><br>
+                    <br><label>Masukkan Gambar target: </label><br>
+                    <input id="file" type = "file" name = "file" /><br>
+                    <br><br><label for="tipe_dekripsi-field">Tipe Dekripsi : </label><br>
+                    <input id="tipe-field" type="radio" name="tipe_enc" value="tanpadekripsi">Tanpa dekripsi</input><br>
+                    <input id="tipe-field" type="radio" name="tipe_enc" value="dengandekripsi">Dengan dekripsi</input>
+                    <br><br>
+                `
+                let submit = '<input id="submit-button" type="button" value="Submit"></input></form>'
+                $("#input-section").append(input, submit);
                 $("#submit-button").click(() => {
                     $("#result-section").empty();
-                    const route = (mode === "Cipher") ? "encrypt" : "decrypt";
-                    const text = $("#text-field").val();
                     const key = $("#key-field").val();
-                    $.get("/rc4/" + route, {text: text, key:key}).done((data) => {
+                    const tipe =  $("#tipe_field").val();
+                    const f = $("#file").val();
+                    $.get("/stegano/" + "dekripsi", {tipe:tipe, key:key, f:f}).done((data) => {
                         const result = 
-                        `<br><label for="result-field">Result : </label><br>
+                        `<br><label for="result-field">Hasil Dekripsi : </label><br>
                         <br><div id="result-field">${data}</div>`
                         $("#result-section").append(result)
                     })
                 })
-            }
-        }
-        function prepare_file_input(mode) {
-            if (mode === "encrypt" || mode === "decrypt") {
+            }else{
                 const input = 
-                `<form action = "/rc4/file_${mode}" method = "POST" 
+                `<h3>File Video</h3>
+                <form action = "/stegano/dekripsi" method = "POST" 
                 enctype = "multipart/form-data">
                     <br><label for="key-field">Key : </label><br>
                     <input id="key-field" type="text" name="key"></input><br>
-                    <br><label>Choose Your File: </label><br>
-                    <input type = "file" name = "file" />
-                    <input id="inputFile" type = "submit" value="Submit"/>
-                </form>`
-                $("#input-section").append(input);
+                    <br><label for="pesan-field">Pesan : </label><br>
+                    <input id="pesan-field" type="text" name="pesan"></input><br>
+                    <br><label>Masukkan Video target: </label><br>
+                    <input type = "file" name = "file" /><br>
+                    <br><br><label for="tipe_dekripsi-field">Tipe dekripsi : </label><br>
+                    <input type="radio" name="tipe_enc" value="tanpadekripsi">Tanpa dekripsi</input><br>
+                    <input type="radio" name="tipe_enc" value="dengandekripsi">Dengan dekripsi</input>
+                    <br><br>
+                `
+                let submit = '<input id="submit-button" type="button" value="Submit"></input></form>'
+                $("#input-section").append(input, submit);
+                $("#submit-button").click(() => {
+                    $("#result-section").empty();
+                    const key = $("#key-field").val();
+                    const tipe =  $("#tipe-field").val();
+                    const f = $("#file").val();
+                    $.get("/stegano/" + "dekripsi", {tipe:tipe, key:key, f:f}).done((data) => {
+                        const result = 
+                        `<br><label for="result-field">Hasil Dekripsi : </label><br>
+                        <br><div id="result-field">${data}</div>`
+                        $("#result-section").append(result)
+                    })
+                })
             }
         }
     </script>

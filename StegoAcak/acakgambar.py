@@ -207,6 +207,7 @@ def decrypt(file, kunci):
             else:
                 k += 1
 
+"""
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,)
     subparsers = parser.add_subparsers(dest="command")
@@ -229,4 +230,4 @@ if __name__ == '__main__':
     if(args.command == "encrypt"):
         encrypt(args.file_input, args.pesan, args.kunci, args.output)
     elif(args.command == "decrypt"):
-        print(decrypt(args.file_input, args.kunci))
+        print(decrypt(args.file_input, args.kunci))"""

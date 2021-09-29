@@ -12,6 +12,7 @@ app.secret_key = os.urandom(24)
 app.config["UPLOAD_FOLDER"]='dump'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 ALLOWED_EXTENSIONS_CITRA = set(['png', 'bmp'])
+ALLOWED_EXTENSIONS_VIDEO = set(['avi'])
 
 @app.route('/')
 def home():
@@ -78,7 +79,12 @@ def stego_enkripsi_page():
     return render_template("stego_enc.html")
 
 def allowed_file(filename):
-	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS_CITRA
+    if('.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS_CITRA):
+        return "gambar"
+    elif('.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS_VIDEO):
+	    return "video"
+    else:
+        return "null" 
 
 @app.route('/stegano/enkripsi', methods=["POST"])
 def citra_encrypt():
@@ -88,7 +94,7 @@ def citra_encrypt():
         tipe = request.form.get("tipe_enc")
         sebaran = request.form.get("sebaran")
         f = request.files['file']
-        if f and allowed_file(f.filename):
+        if f and (allowed_file(f.filename)=="gambar"):
             filename = secure_filename(f.filename)
             f.save(os.path.join("static","images" ,filename))
             if(sebaran == "acak"):
@@ -96,13 +102,13 @@ def citra_encrypt():
                     acakgambar.encrypt(os.path.join("static","images" ,filename), 
                                         pesan, 
                                         key, 
-                                        os.path.join("static","images","enc"+filename))
+                                        os.path.join("static","images","enc-"+filename))
                 elif(tipe == "denganenkripsi"):
                     pesan_rc4 = rc4.encrypt_text(pesan, key)
                     acakgambar.encrypt(os.path.join("static","images",filename), 
                                         pesan_rc4, 
                                         key, 
-                                        os.path.join("static","images","enc"+filename))
+                                        os.path.join("static","images","enc-"+filename))
             #print('upload_image filename: ' + filename)
             #flash('Gambar berhasil diupload')
             return render_template('stego_enc.html', filename=filename, encrypt=True)
@@ -113,16 +119,85 @@ def citra_encrypt():
             # print(cipher)
             # open("dump/output", "wb").write(cipher)
             # return render_template("stego_enc.html", file_decrypt=True)
-    return 
+        elif(f and (allowed_file(f.filename)=="video")):
+            filename = secure_filename(f.filename)
+            f.save(os.path.join("static","videos" ,filename))
+            if(sebaran == "acak"):
+                if(tipe == "tanpaenkripsi"):
+                    acakvideo.encrypt_driver(os.path.join("static","videos" ,filename), 
+                                        pesan, 
+                                        key, 
+                                        os.path.join("static","videos","enc-"+filename))
+                elif(tipe == "denganenkripsi"):
+                    pesan_rc4 = rc4.encrypt_text(pesan, key)
+                    acakvideo.encrypt_driver(os.path.join("static","videos",filename), 
+                                        pesan_rc4, 
+                                        key, 
+                                        os.path.join("static","videos","enc-"+filename))
 
 @app.route('/stegano/enkripsi/display/<filename>')
 def display_image(filename):
 	#print('display_image filename: ' + filename)
 	return redirect(url_for('static', filename='images/'+filename))
 
+@app.route('/stegano/enkripsi/display/<filename>')
+def display_video(filename):
+	#print('display_image filename: ' + filename)
+	return redirect(url_for('static', filename='videos/'+filename))
+
 @app.route('/stegano/dekripsi')
 def stego_dekripsi_page():
     return render_template("stego_dec.html")
+
+@app.route('/stegano/dekripsi', methods=["POST"])
+def citra_decrypt():
+    if request.method == 'POST':
+        key = request.form.get("key")
+        tipe = request.form.get("tipe_enc")
+        f = request.files['file']
+        if f and (allowed_file(f.filename)=="gambar"):
+            filename = secure_filename(f.filename)
+            f.save(os.path.join("static","images" ,filename))
+            if(tipe == "tanpadekripsi"):
+                return acakgambar.decrypt(os.path.join("static","images",filename), key)
+            elif(tipe == "dengandekripsi"):
+                ciphernya = acakgambar.decrypt(os.path.join("static","images",filename), key)
+                pesan_rc4 = rc4.decrypt_text(ciphernya, key)
+                return (pesan_rc4)
+            #print('upload_image filename: ' + filename)
+            #flash('Gambar berhasil diupload')
+            #return render_template('stego_dec.html', encrypt=True)
+            # f.save("dump/input")
+            # f = open(f"dump/input", "rb")
+            # plain = f.read()
+            # cipher = rc4.encrypt(plain, key)
+            # print(cipher)
+            # open("dump/output", "wb").write(cipher)
+            # return render_template("stego_enc.html", file_decrypt=True)
+        elif(f and (allowed_file(f.filename)=="video")):
+            filename = secure_filename(f.filename)
+            f.save(os.path.join("static","videos" ,filename))
+            if(tipe == "tanpadekripsi"):
+                return acakvideo.decrypt_driver(os.path.join("static","videos" ,filename), 
+                                    key, 
+                                    os.path.join("static","videos","enc-"+filename))
+            elif(tipe == "dengandekripsi"):
+                ciphernya = acakvideo.decrypt_driver(os.path.join("static","videos",filename), 
+                                    pesan_rc4, 
+                                    key, 
+                                    os.path.join("static","videos","enc-"+filename))
+                pesan_rc4 = rc4.decrypt_text(ciphernya, key)
+                return (pesan_rc4)
+
+@app.route('/stegano/dekripsi/display/<filename>')
+def display_dec_image(filename):
+	#print('display_image filename: ' + filename)
+	return redirect(url_for('static', filename='images/'+filename))
+
+@app.route('/stegano/dekripsi/display/<filename>')
+def display_dec_video(filename):
+	#print('display_image filename: ' + filename)
+	return redirect(url_for('static', filename='videos/'+filename))
 
 if __name__ == "__main__":
     app.run(debug=True)

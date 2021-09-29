@@ -76,11 +76,33 @@
                     <input id="key-field" type="text" name="key"></input><br>
                     <br><label for="pesan-field">Pesan : </label><br>
                     <input id="pesan-field" type="text" name="pesan"></input><br>
-                    <br><label>Choose Your File: </label><br>
+                    <br><label>Masukkan Gambar target: </label><br>
                     <input type = "file" name = "file" /><br>
+                    <br><label for="bit-field">Tipe persebaran bit : </label><br>
                     <input type="radio" name="sebaran" value="sekuensial">Sekuensial</input><br>
                     <input type="radio" name="sebaran" value="acak">Acak</input>
-                    <br>
+                    <br><br><label for="tipe_enkripsi-field">Tipe Enkripsi : </label><br>
+                    <input type="radio" name="tipe_enc" value="tanpaenkripsi">Tanpa Enkripsi</input><br>
+                    <input type="radio" name="tipe_enc" value="denganenkripsi">Dengan Enkripsi</input>
+                    <br><br>
+                    <input id="inputFile" type = "submit" value="Submit"/>
+                </form>`
+                $("#input-section").append(input);
+            }else{
+                const input = 
+                `<h3>File Video</h3>
+                <form action = "/stegano/enkripsi" method = "POST" 
+                enctype = "multipart/form-data">
+                    <br><label for="key-field">Key : </label><br>
+                    <input id="key-field" type="text" name="key"></input><br>
+                    <br><label for="pesan-field">Pesan : </label><br>
+                    <input id="pesan-field" type="text" name="pesan"></input><br>
+                    <br><label>Masukkan Video target: </label><br>
+                    <input type = "file" name = "file" /><br>
+                    <br><label for="bit-field">Tipe persebaran bit : </label><br>
+                    <input type="radio" name="sebaran" value="sekuensial">Sekuensial</input><br>
+                    <input type="radio" name="sebaran" value="acak">Acak</input>
+                    <br><br><label for="tipe_enkripsi-field">Tipe Enkripsi : </label><br>
                     <input type="radio" name="tipe_enc" value="tanpaenkripsi">Tanpa Enkripsi</input><br>
                     <input type="radio" name="tipe_enc" value="denganenkripsi">Dengan Enkripsi</input>
                     <br><br>

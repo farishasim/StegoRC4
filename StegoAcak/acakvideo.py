@@ -212,29 +212,29 @@ def encrypt(dir, pesan, kunci):
     print("Nilai PSNR Video adalah:", psnr_total//iterator)
     return True
 
-def encrypt_driver(file_name, pesan, kunci):
-    dir = "temp/"
+def encrypt_driver(file_name, pesan, kunci, output):
+    dir = os.path.join("static","video")
     try:
-        open("citra/" + file_name)
+        open(os.path.join(dir,file_name))
     except IOError:
         print("Maaf! File tidak ada")
         exit()
 
     print("Extract Videonya...")
-    frame_extract(dir, os.path.join("citra",str(file_name)))
+    frame_extract(os.path.join(dir,"temp"), os.path.join(dir,file_name))
     print("Extract Video Selesai")
 
-    if (encrypt(dir, pesan, kunci)):
+    if (encrypt(os.path.join(dir,"temp"), pesan, kunci)):
         print("Extract audionya...")
         #call(["ffmpeg", "-i", "citra/" + str(file_name), "-q:a", "0", "-map", "a", "temp/audio.mp3", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
-        video = VideoFileClip("citra/"+str(file_name))
-        video.audio.write_audiofile('./temp/audio.mp3')
+        video = VideoFileClip(os.path.join(dir,file_name))
+        video.audio.write_audiofile('audio.mp3')
         print("Extract Audio Selesai")
 
         print("Merging Gambarnya...")
         capture = cv2.VideoCapture(os.path.join("citra",str(file_name))) # Stores OG Video into a Capture Window
         fps = capture.get(cv2.CAP_PROP_FPS)
-        convert_frames_to_video(dir,"temp/video.avi",fps)
+        convert_frames_to_video(os.path.join(dir,"temp"),os.path.join(dir,"temp","video.avi"),fps)
         #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
         #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
         print("Merging gambar selesai")
@@ -242,12 +242,12 @@ def encrypt_driver(file_name, pesan, kunci):
         print("Gabung Video dan Audionya")
         #call(["ffmpeg", "-i", "temp/video.mov", "-i", "temp/audio.mp3", "-codec", "copy","citra/enc-" + str(file_name), "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT)
         call(['ffmpeg',
-                '-i', "temp/video.avi",
-                '-i', "temp/audio.mp3",
+                '-i', os.path.join(dir,"temp","video.avi"),
+                '-i', os.path.join(dir,"temp","audio.mp3"),
                 '-y',
                 '-vcodec', 'copy',
                 '-acodec', 'copy',
-                "citra/hasil.avi"])
+                output])
     else:
         print("Maaf enkripsi gagal, silahkan cek panjang pesan")
 
