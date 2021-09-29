@@ -30,18 +30,19 @@
             </p>
         </div>
         <div id="preview-section">
-            {% if respons %}
+            {% if encrypt and respons and filename %}
                 <div>
+                    <!--img src="{{url_for('display_image', filename=filename)}}" alt="Stego Image"-->
                     <p>{{respons}}</p>
                 </div>
             {% endif %}
         </div>
         <div id="result-section">
             {% if encrypt %}
-                <br><p>File sudah dienkripsi.</p>
+                <p>File sudah dienkripsi.</p>
                 <input id="get-file" type="button" value="Get Your File" onclick="location.href='/download/{{filename}}'">
             {% endif %}
-        </div><br><br>
+        </div><br>
         <a href="../stegano">Back</a>
     </main>
 

@@ -67,7 +67,13 @@ def rc4_decrypt_file():
 @app.route('/download/<filename>')
 def download(filename):
     path = os.path.join(current_app.root_path + "/" + app.config["UPLOAD_FOLDER"])
-    return send_file(os.path.join(path,filename), as_attachment=True)
+    ext = filename.rsplit('.', 1)[1].lower()
+    print(ext)
+    if(ext in ALLOWED_EXTENSIONS_CITRA):
+        print("disini")
+        return send_file(os.path.join(path,filename), as_attachment=True, mimetype='image/'+str(ext))
+    elif(ext in ALLOWED_EXTENSIONS_VIDEO):
+        return send_file(os.path.join(path,filename), as_attachment=True, mimetype='video/'+str(ext))
 
 #----------------Steganography------------------
 @app.route('/stegano')
@@ -94,7 +100,7 @@ def citra_encrypt():
         tipe = request.form.get("tipe_enc")
         sebaran = request.form.get("sebaran")
         f = request.files['file']
-        if f and (allowed_file(f.filename)=="gambar"):
+        if (f and allowed_file(f.filename)=="gambar"):
             filename = secure_filename(f.filename)
             f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(sebaran == "acak"):
@@ -111,14 +117,7 @@ def citra_encrypt():
                                         os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
             #print('upload_image filename: ' + filename)
             #flash('Gambar berhasil diupload')
-            return render_template('stego_enc.html', filename=filename, respons=respons, encrypt=True)
-            # f.save("dump/input")
-            # f = open(f"dump/input", "rb")
-            # plain = f.read()
-            # cipher = rc4.encrypt(plain, key)
-            # print(cipher)
-            # open("dump/output", "wb").write(cipher)
-            # return render_template("stego_enc.html", file_decrypt=True)
+            return render_template('stego_enc.html', filename="enc-"+filename, respons=respons, encrypt=True)
         elif(f and (allowed_file(f.filename)=="video")):
             filename = secure_filename(f.filename)
             f.save(os.path.join("static","videos" ,filename))
@@ -138,7 +137,7 @@ def citra_encrypt():
 @app.route('/stegano/enkripsi/display/<filename>')
 def display_image(filename):
 	#print('display_image filename: ' + filename)
-	return redirect(url_for('static', filename='images/'+filename))
+	return redirect(url_for('dump',filename=filename))
 
 @app.route('/stegano/enkripsi/display/<filename>')
 def display_video(filename):
@@ -160,7 +159,7 @@ def citra_decrypt():
             filename = secure_filename(f.filename)
             f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(tipe == "tanpadekripsi"):
-                jawaban = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],"enc-Lena512warna.bmp"), key)
+                jawaban = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
             elif(tipe == "dengandekripsi"):
                 ciphernya = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
                 pesan_rc4 = rc4.decrypt_text(ciphernya, key)
