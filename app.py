@@ -1,6 +1,6 @@
 from flask import *
 from cipher import rc4
-from StegoAcak import acakgambar, acakvideo, prima
+from StegoAcak import acakgambar, acakvideo
 from werkzeug.utils import secure_filename
 import urllib.request
 import json
@@ -67,7 +67,7 @@ def rc4_decrypt_file():
 @app.route('/download/<filename>')
 def download(filename):
     path = os.path.join(current_app.root_path + "/" + app.config["UPLOAD_FOLDER"])
-    return send_from_directory(path, filename=filename)
+    return send_from_directory(directory=path, path=path, filename=filename, as_attachment=True)
 
 #----------------Steganography------------------
 @app.route('/stegano')
@@ -96,19 +96,19 @@ def citra_encrypt():
         f = request.files['file']
         if f and (allowed_file(f.filename)=="gambar"):
             filename = secure_filename(f.filename)
-            f.save(os.path.join("static","images" ,filename))
+            f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(sebaran == "acak"):
                 if(tipe == "tanpaenkripsi"):
-                    acakgambar.encrypt(os.path.join("static","images" ,filename), 
+                    acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"] ,filename), 
                                         pesan, 
                                         key, 
-                                        os.path.join("static","images","enc-"+filename))
+                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
                 elif(tipe == "denganenkripsi"):
                     pesan_rc4 = rc4.encrypt_text(pesan, key)
-                    acakgambar.encrypt(os.path.join("static","images",filename), 
+                    acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
                                         pesan_rc4, 
                                         key, 
-                                        os.path.join("static","images","enc-"+filename))
+                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
             #print('upload_image filename: ' + filename)
             #flash('Gambar berhasil diupload')
             return render_template('stego_enc.html', filename=filename, encrypt=True)
@@ -151,29 +151,21 @@ def stego_dekripsi_page():
 
 @app.route('/stegano/dekripsi', methods=["POST"])
 def citra_decrypt():
+    jawaban = ''
     if request.method == 'POST':
         key = request.form.get("key")
         tipe = request.form.get("tipe_enc")
         f = request.files['file']
         if f and (allowed_file(f.filename)=="gambar"):
             filename = secure_filename(f.filename)
-            f.save(os.path.join("static","images" ,filename))
+            f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(tipe == "tanpadekripsi"):
-                return acakgambar.decrypt(os.path.join("static","images",filename), key)
+                jawaban = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
             elif(tipe == "dengandekripsi"):
-                ciphernya = acakgambar.decrypt(os.path.join("static","images",filename), key)
+                ciphernya = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
                 pesan_rc4 = rc4.decrypt_text(ciphernya, key)
-                return (pesan_rc4)
-            #print('upload_image filename: ' + filename)
-            #flash('Gambar berhasil diupload')
-            #return render_template('stego_dec.html', encrypt=True)
-            # f.save("dump/input")
-            # f = open(f"dump/input", "rb")
-            # plain = f.read()
-            # cipher = rc4.encrypt(plain, key)
-            # print(cipher)
-            # open("dump/output", "wb").write(cipher)
-            # return render_template("stego_enc.html", file_decrypt=True)
+                jawaban = (pesan_rc4)
+            return render_template('stego_dec.html', filename=filename, jawaban=jawaban, encrypt=True)
         elif(f and (allowed_file(f.filename)=="video")):
             filename = secure_filename(f.filename)
             f.save(os.path.join("static","videos" ,filename))

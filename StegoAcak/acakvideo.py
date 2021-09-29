@@ -13,7 +13,7 @@ import glob
 from natsort import natsorted
 from os.path import isfile, join
 import pathlib
-from . import prima
+from .alat import *
 
 #reference:
 # https://github.com/r9ht/Caesar-Cipher-Video-Steganography/blob/a51dae6259192a0fb943215a6c7259a48c574c13/functions.py#L12

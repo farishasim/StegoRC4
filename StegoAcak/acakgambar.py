@@ -5,7 +5,7 @@ import io
 import PIL.Image as Image
 import numpy as np
 import cv2
-from . import prima
+from .alat import prima
 
 #python acak.py encrypt ./lena.bmp 1leomaumakan
 #python acak.py decrypt ./stegonya.png
@@ -103,6 +103,7 @@ def stegoing(kode, gambar, seed, key):
                 tempgambar[-1] -= 1
         
         tempgambar = tuple(tempgambar)
+        print(tempgambar)
         yield tempgambar[0:3]
         yield tempgambar[3:6]
         yield tempgambar[6:9]
@@ -136,8 +137,10 @@ def encrypt(file, pesan, kunci, output):
         else:
             x += 1
         pixel_seed += 1
-    imgbaru.save(output)
-    print("Nilai PSNR adalah:",psnr(cv2.imread(file),cv2.imread(output)))
+    imgbaru.convert('RGB').save(output)
+    strnya = "Nilai PSNR adalah:" + str(psnr(cv2.imread(file),cv2.imread(output)))
+    print(strnya)
+    return strnya
 
 def psnr(imageawal,imageakhir):
     rms = np.mean((imageawal - imageakhir) ** 2)
@@ -145,6 +148,7 @@ def psnr(imageawal,imageakhir):
 
 def decrypt(file, kunci):
     img = Image.open(file, 'r')
+    #print("file = ",file)
     pesan = ''
 
     imagenya = []
@@ -173,13 +177,16 @@ def decrypt(file, kunci):
 
     # string of binary data
     teksbinary = ''
+    print(gambar[:8])
     for i in gambar[:8]:
         if (i % 2 == 0):
             teksbinary += '0'
         else:
             teksbinary += '1'
+    print(teksbinary)
     kode = chr(int(teksbinary, 2))
 
+    print(kode)
     if (kode == "a"):
         hasil = [0]
         k = 0
@@ -207,7 +214,6 @@ def decrypt(file, kunci):
             else:
                 k += 1
 
-"""
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,)
     subparsers = parser.add_subparsers(dest="command")
@@ -230,4 +236,4 @@ if __name__ == '__main__':
     if(args.command == "encrypt"):
         encrypt(args.file_input, args.pesan, args.kunci, args.output)
     elif(args.command == "decrypt"):
-        print(decrypt(args.file_input, args.kunci))"""
+        print(decrypt(args.file_input, args.kunci))

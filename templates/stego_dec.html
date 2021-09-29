@@ -30,19 +30,10 @@
             </p>
         </div>
         <div id="preview-section">
-            {% if filename %}
-                <div>
-                    <img src="{{ url_for('display_dec_image', filename=filename) }}">
-                </div>
-            {% endif %}
         </div>
         <div id="result-section">
-            {% if encrypt %}
-                <br><p>File sudah didekripsi.</p>
-                <input id="get-file" type="button" value="Get Your File" onclick="location.href='/download/output'">
-            {% elif decrypt %}
-                <br><p>File sudah didekripsi.</p>
-                <input id="get-file" type="button" value="Get Your File" onclick="location.href='/download/output'">
+            {% if decrypt and jawaban %}
+                <p>Kunci: {{jawaban}}</p>
             {% endif %}
         </div><br><br>
         <a href="../stegano">Back</a>
@@ -80,21 +71,21 @@
                     <input id="tipe-field" type="radio" name="tipe_enc" value="tanpadekripsi">Tanpa dekripsi</input><br>
                     <input id="tipe-field" type="radio" name="tipe_enc" value="dengandekripsi">Dengan dekripsi</input>
                     <br><br>
-                `
-                let submit = '<input id="submit-button" type="button" value="Submit"></input></form>'
-                $("#input-section").append(input, submit);
-                $("#submit-button").click(() => {
+                    <input id="inputFile" type="submit" value="Submit"></input></form>`
+                $("#input-section").append(input);
+                /*$("#submit-button").click(() => {
                     $("#result-section").empty();
+                    const route = "citra";
                     const key = $("#key-field").val();
                     const tipe =  $("#tipe_field").val();
                     const f = $("#file").val();
-                    $.get("/stegano/" + "dekripsi", {tipe:tipe, key:key, f:f}).done((data) => {
+                    $.get("stegano/" + "dekripsi/"+ route, {tipe:tipe, key:key, f:f}).done((data) => {
                         const result = 
                         `<br><label for="result-field">Hasil Dekripsi : </label><br>
                         <br><div id="result-field">${data}</div>`
                         $("#result-section").append(result)
                     })
-                })
+                })*/
             }else{
                 const input = 
                 `<h3>File Video</h3>
