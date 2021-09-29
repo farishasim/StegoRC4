@@ -95,6 +95,7 @@ def allowed_file(filename):
 @app.route('/stegano/enkripsi', methods=["POST"])
 def citra_encrypt():
     if request.method == 'POST':
+        respons = ''
         key = request.form.get("key")
         pesan = request.form.get("pesan")
         tipe = request.form.get("tipe_enc")
@@ -109,30 +110,43 @@ def citra_encrypt():
                                         pesan, 
                                         key, 
                                         os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                    status = True
                 elif(tipe == "denganenkripsi"):
                     pesan_rc4 = rc4.encrypt_text(pesan, key)
                     respons = acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
                                         pesan_rc4, 
                                         key, 
                                         os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                    status = True
             #print('upload_image filename: ' + filename)
             #flash('Gambar berhasil diupload')
-            return render_template('stego_enc.html', filename="enc-"+filename, respons=respons, encrypt=True)
         elif(f and (allowed_file(f.filename)=="video")):
             filename = secure_filename(f.filename)
-            f.save(os.path.join("static","videos" ,filename))
+            f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(sebaran == "acak"):
                 if(tipe == "tanpaenkripsi"):
-                    acakvideo.encrypt_driver(os.path.join("static","videos" ,filename), 
+                    responnya = acakvideo.encrypt_driver(app.config["UPLOAD_FOLDER"],
+                                        filename, 
                                         pesan, 
                                         key, 
-                                        os.path.join("static","videos","enc-"+filename))
+                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
                 elif(tipe == "denganenkripsi"):
                     pesan_rc4 = rc4.encrypt_text(pesan, key)
-                    acakvideo.encrypt_driver(os.path.join("static","videos",filename), 
+                    responnnya = acakvideo.encrypt_driver(app.config["UPLOAD_FOLDER"],
+                                        filename,
                                         pesan_rc4, 
                                         key, 
-                                        os.path.join("static","videos","enc-"+filename))
+                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                if (responnya == -1):
+                    flash("Maaf! File tidak ada")
+                    status = False
+                elif (responnya == -2):
+                    flash("Cek jumlah panjang pesan, video tidak cukup!")
+                    status = False
+                else:
+                    respons = responnya
+                    status = True
+        return render_template('stego_enc.html', filename="enc-"+filename, respons=respons, encrypt=status)
 
 @app.route('/stegano/enkripsi/display/<filename>')
 def display_image(filename):
@@ -167,16 +181,16 @@ def citra_decrypt():
             return render_template('stego_dec.html', filename=filename, jawaban=jawaban, decrypt=True)
         elif(f and (allowed_file(f.filename)=="video")):
             filename = secure_filename(f.filename)
-            f.save(os.path.join("static","videos" ,filename))
+            f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(tipe == "tanpadekripsi"):
-                return acakvideo.decrypt_driver(os.path.join("static","videos" ,filename), 
+                return acakvideo.decrypt_driver(os.path.join(app.config["UPLOAD_FOLDER"] ,filename), 
                                     key, 
-                                    os.path.join("static","videos","enc-"+filename))
+                                    os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
             elif(tipe == "dengandekripsi"):
-                ciphernya = acakvideo.decrypt_driver(os.path.join("static","videos",filename), 
+                ciphernya = acakvideo.decrypt_driver(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
                                     pesan_rc4, 
                                     key, 
-                                    os.path.join("static","videos","enc-"+filename))
+                                    os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
                 pesan_rc4 = rc4.decrypt_text(ciphernya, key)
                 return (pesan_rc4)
 
