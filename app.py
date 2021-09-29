@@ -67,7 +67,7 @@ def rc4_decrypt_file():
 @app.route('/download/<filename>')
 def download(filename):
     path = os.path.join(current_app.root_path + "/" + app.config["UPLOAD_FOLDER"])
-    return send_from_directory(directory=path, path=path, filename=filename, as_attachment=True)
+    return send_file(os.path.join(path,filename), as_attachment=True)
 
 #----------------Steganography------------------
 @app.route('/stegano')
@@ -99,19 +99,19 @@ def citra_encrypt():
             f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(sebaran == "acak"):
                 if(tipe == "tanpaenkripsi"):
-                    acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"] ,filename), 
+                    respons = acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"] ,filename), 
                                         pesan, 
                                         key, 
                                         os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
                 elif(tipe == "denganenkripsi"):
                     pesan_rc4 = rc4.encrypt_text(pesan, key)
-                    acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
+                    respons = acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
                                         pesan_rc4, 
                                         key, 
                                         os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
             #print('upload_image filename: ' + filename)
             #flash('Gambar berhasil diupload')
-            return render_template('stego_enc.html', filename=filename, encrypt=True)
+            return render_template('stego_enc.html', filename=filename, respons=respons, encrypt=True)
             # f.save("dump/input")
             # f = open(f"dump/input", "rb")
             # plain = f.read()
@@ -160,12 +160,12 @@ def citra_decrypt():
             filename = secure_filename(f.filename)
             f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(tipe == "tanpadekripsi"):
-                jawaban = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
+                jawaban = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],"enc-Lena512warna.bmp"), key)
             elif(tipe == "dengandekripsi"):
                 ciphernya = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
                 pesan_rc4 = rc4.decrypt_text(ciphernya, key)
                 jawaban = (pesan_rc4)
-            return render_template('stego_dec.html', filename=filename, jawaban=jawaban, encrypt=True)
+            return render_template('stego_dec.html', filename=filename, jawaban=jawaban, decrypt=True)
         elif(f and (allowed_file(f.filename)=="video")):
             filename = secure_filename(f.filename)
             f.save(os.path.join("static","videos" ,filename))
