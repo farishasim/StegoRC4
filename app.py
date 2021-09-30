@@ -70,7 +70,6 @@ def download(filename):
     ext = filename.rsplit('.', 1)[1].lower()
     print(ext)
     if(ext in ALLOWED_EXTENSIONS_CITRA):
-        print("disini")
         return send_file(os.path.join(path,filename), as_attachment=True, mimetype='image/'+str(ext))
     elif(ext in ALLOWED_EXTENSIONS_VIDEO):
         return send_file(os.path.join(path,filename), as_attachment=True, mimetype='video/'+str(ext))

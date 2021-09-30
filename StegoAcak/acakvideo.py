@@ -50,17 +50,18 @@ def frame_extract(dir, video):
     cv2.destroyAllWindows()
 
 def convert_frames_to_video(pathIn,pathOut,fps):
-    #print("pathIn = ",pathIn)
+    print("pathIn = ",pathIn)
     frame_array = []
     files = [f for f in os.listdir(pathIn) if isfile(join(pathIn, f))]
     #for sorting the file names properly
     files = natsorted(files,reverse=False)
-    #files.sort(key = lambda x: int(x[5:-4]))
     size = (0,0)
+    #files.sort(key = lambda x: int(x[5:-4]))
+    print(files[0])
     for i in range(len(files)):
         if(pathlib.Path(files[i]).suffix == ".png"):
-            filename = pathIn + files[i]
-            #print(filename)
+            filename = pathIn + files[i] 
+            print(filename)
             #reading each files
             img = cv2.imread(filename)
             height, width, layers = img.shape
@@ -230,25 +231,25 @@ def encrypt_driver(dir, file_name, pesan, kunci, output):
 
     ada, respons = encrypt(os.path.join(dir,"temp"), pesan, kunci)
     if (ada):
-        print("Extract audionya...")
-        #call(["ffmpeg", "-i", "citra/" + str(file_name), "-q:a", "0", "-map", "a", "temp/audio.mp3", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
-        video = VideoFileClip(os.path.join(dir,file_name))
-        video.audio.write_audiofile(os.path.join(dir,'audio.mp3'))
-        print("Extract Audio Selesai")
-
         print("Merging Gambarnya...")
         capture = cv2.VideoCapture(os.path.join(dir,str(file_name))) # Stores OG Video into a Capture Window
         fps = capture.get(cv2.CAP_PROP_FPS)
-        convert_frames_to_video(os.path.join(dir,"temp","/"),os.path.join(dir,"temp","video.avi"),fps)
+        convert_frames_to_video(os.path.join(dir,"temp/"),os.path.join(dir,"temp","video.avi"),fps)
         #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
         #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
         print("Merging gambar selesai")
+
+        print("Extract audionya...")
+        #call(["ffmpeg", "-i", "citra/" + str(file_name), "-q:a", "0", "-map", "a", "temp/audio.mp3", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
+        video = VideoFileClip(os.path.join(dir,file_name))
+        video.audio.write_audiofile(os.path.join(dir,"temp","audio.mp3"))
+        print("Extract Audio Selesai")
 
         print("Gabung Video dan Audionya")
         #call(["ffmpeg", "-i", "temp/video.mov", "-i", "temp/audio.mp3", "-codec", "copy","citra/enc-" + str(file_name), "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT)
         call(['ffmpeg',
                 '-i', os.path.join(dir,"temp","video.avi"),
-                '-i', os.path.join(dir,"audio.mp3"),
+                '-i', os.path.join(dir,"temp","audio.mp3"),
                 '-y',
                 '-vcodec', 'copy',
                 '-acodec', 'copy',
