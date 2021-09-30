@@ -309,7 +309,6 @@ def decrypt(dir, kunci):
     kode = chr(int(teksbinary, 2))
 
     if (kode == "a"):
-        print("Dekripsi dilakukan secara acak")
         hasil = [0]
         k = 0
         while(True):
@@ -362,18 +361,16 @@ def decrypt(dir, kunci):
             hasil.append(kandidat)
             k += 1
 
-def decrypt_driver(file_name, kunci):
-    dir = "temp2"
+def decrypt_driver(dir, file_name, kunci):
     try:
-        open("citra/" + file_name)
+        open(os.path.join(dir,file_name))
     except IOError:
-        print("Maaf! File tidak ada")
-        exit()
+        return -1
     print("Extract Videonya...")
-    frame_extract(dir, os.path.join("citra",str(file_name)))
+    frame_extract(os.path.join(dir,"temp2"), os.path.join(dir,str(file_name)))
     print("Extract Video Selesai")
 
-    pesan = decrypt(dir, kunci)
+    pesan = decrypt(os.path.join(dir,"temp2"), kunci)
     pesan2 = pesan[1:]
     return pesan2
 

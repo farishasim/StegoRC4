@@ -10,7 +10,7 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 app.config["UPLOAD_FOLDER"]='dump'
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+#app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 ALLOWED_EXTENSIONS_CITRA = set(['png', 'bmp'])
 ALLOWED_EXTENSIONS_VIDEO = set(['avi'])
 
@@ -177,21 +177,21 @@ def citra_decrypt():
                 ciphernya = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
                 pesan_rc4 = rc4.decrypt_text(ciphernya, key)
                 jawaban = (pesan_rc4)
-            return render_template('stego_dec.html', filename=filename, jawaban=jawaban, decrypt=True)
         elif(f and (allowed_file(f.filename)=="video")):
             filename = secure_filename(f.filename)
             f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(tipe == "tanpadekripsi"):
-                return acakvideo.decrypt_driver(os.path.join(app.config["UPLOAD_FOLDER"] ,filename), 
-                                    key, 
-                                    os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                jawaban = acakvideo.decrypt_driver(app.config["UPLOAD_FOLDER"] ,
+                                    filename, 
+                                    key)
             elif(tipe == "dengandekripsi"):
-                ciphernya = acakvideo.decrypt_driver(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
+                ciphernya = acakvideo.decrypt_driver(app.config["UPLOAD_FOLDER"],
+                                    filename, 
                                     pesan_rc4, 
-                                    key, 
-                                    os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                                    key)
                 pesan_rc4 = rc4.decrypt_text(ciphernya, key)
-                return (pesan_rc4)
+                jawaban = (pesan_rc4)
+        return render_template('stego_dec.html', filename=filename, jawaban=jawaban, decrypt=True)
 
 @app.route('/stegano/dekripsi/display/<filename>')
 def display_dec_image(filename):

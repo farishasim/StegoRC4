@@ -33,7 +33,7 @@
         </div>
         <div id="result-section">
             {% if decrypt and jawaban %}
-                <p>Kunci: {{jawaban}}</p>
+                <p>Pesan: {{jawaban}}</p>
             {% endif %}
         </div><br><br>
         <a href="../stegano">Back</a>
@@ -50,13 +50,6 @@
             $("#result-section").empty();
             prepare_file_input("video");
         })
-        // $("#get-file").click(() => {
-        //     $.get('/download/output')
-        //     //     .done((data) => {
-        //     //     console.log(data);
-        //     // })
-        //     ;
-        // })
         function prepare_file_input(mode) {
             if (mode === "citra") {
                 let input = 
@@ -73,49 +66,21 @@
                     <br><br>
                     <input id="inputFile" type="submit" value="Submit"></input></form>`
                 $("#input-section").append(input);
-                /*$("#submit-button").click(() => {
-                    $("#result-section").empty();
-                    const route = "citra";
-                    const key = $("#key-field").val();
-                    const tipe =  $("#tipe_field").val();
-                    const f = $("#file").val();
-                    $.get("stegano/" + "dekripsi/"+ route, {tipe:tipe, key:key, f:f}).done((data) => {
-                        const result = 
-                        `<br><label for="result-field">Hasil Dekripsi : </label><br>
-                        <br><div id="result-field">${data}</div>`
-                        $("#result-section").append(result)
-                    })
-                })*/
             }else{
-                const input = 
+                let input = 
                 `<h3>File Video</h3>
                 <form action = "/stegano/dekripsi" method = "POST" 
                 enctype = "multipart/form-data">
                     <br><label for="key-field">Key : </label><br>
                     <input id="key-field" type="text" name="key"></input><br>
-                    <br><label for="pesan-field">Pesan : </label><br>
-                    <input id="pesan-field" type="text" name="pesan"></input><br>
                     <br><label>Masukkan Video target: </label><br>
-                    <input type = "file" name = "file" /><br>
-                    <br><br><label for="tipe_dekripsi-field">Tipe dekripsi : </label><br>
-                    <input type="radio" name="tipe_enc" value="tanpadekripsi">Tanpa dekripsi</input><br>
-                    <input type="radio" name="tipe_enc" value="dengandekripsi">Dengan dekripsi</input>
+                    <input id="file" type = "file" name = "file" /><br>
+                    <br><br><label for="tipe_dekripsi-field">Tipe Dekripsi : </label><br>
+                    <input id="tipe-field" type="radio" name="tipe_enc" value="tanpadekripsi">Tanpa dekripsi</input><br>
+                    <input id="tipe-field" type="radio" name="tipe_enc" value="dengandekripsi">Dengan dekripsi</input>
                     <br><br>
-                `
-                let submit = '<input id="submit-button" type="button" value="Submit"></input></form>'
-                $("#input-section").append(input, submit);
-                $("#submit-button").click(() => {
-                    $("#result-section").empty();
-                    const key = $("#key-field").val();
-                    const tipe =  $("#tipe-field").val();
-                    const f = $("#file").val();
-                    $.get("/stegano/" + "dekripsi", {tipe:tipe, key:key, f:f}).done((data) => {
-                        const result = 
-                        `<br><label for="result-field">Hasil Dekripsi : </label><br>
-                        <br><div id="result-field">${data}</div>`
-                        $("#result-section").append(result)
-                    })
-                })
+                    <input id="inputFile" type="submit" value="Submit"></input></form>`
+                $("#input-section").append(input);
             }
         }
     </script>
