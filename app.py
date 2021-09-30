@@ -105,19 +105,23 @@ def citra_encrypt():
             filename = secure_filename(f.filename)
             f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(sebaran == "acak"):
-                if(tipe == "tanpaenkripsi"):
-                    respons = acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"] ,filename), 
-                                        pesan, 
-                                        key, 
-                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
-                    status = True
-                elif(tipe == "denganenkripsi"):
-                    pesan_rc4 = rc4.encrypt_text(pesan, key)
-                    respons = acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
-                                        pesan_rc4, 
-                                        key, 
-                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
-                    status = True
+                if(key != ''):
+                    if(tipe == "tanpaenkripsi"):
+                        respons = acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"] ,filename), 
+                                            pesan, 
+                                            key, 
+                                            os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                        status = True
+                    elif(tipe == "denganenkripsi"):
+                        pesan_rc4 = rc4.encrypt_text(pesan, key)
+                        respons = acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
+                                            pesan_rc4, 
+                                            key, 
+                                            os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                        status = True
+                else:
+                    flash("Masukkan kunci terlebih dahulu!")
+                    status = False
             elif(sebaran == "sekuensial"):
                 if(tipe == "tanpaenkripsi"):
                     respons = acak_gambar_seq.encrypt(os.path.join(app.config["UPLOAD_FOLDER"] ,filename), 
@@ -125,11 +129,15 @@ def citra_encrypt():
                                         os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
                     status = True
                 elif(tipe == "denganenkripsi"):
-                    pesan_rc4 = rc4.encrypt_text(pesan, key)
-                    respons = acak_gambar_seq.encrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
-                                        pesan_rc4,  
-                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
-                    status = True
+                    if(key != ''):
+                        pesan_rc4 = rc4.encrypt_text(pesan, key)
+                        respons = acak_gambar_seq.encrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
+                                            pesan_rc4,  
+                                            os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                        status = True
+                    else:
+                        flash("Masukkan kunci terlebih dahulu!")
+                        status = False
             #print('upload_image filename: ' + filename)
             #flash('Gambar berhasil diupload')
         elif(f and (allowed_file(f.filename)=="video")):
@@ -160,16 +168,6 @@ def citra_encrypt():
                     status = True
         return render_template('stego_enc.html', filename="enc-"+filename, respons=respons, encrypt=status)
 
-@app.route('/stegano/enkripsi/display/<filename>')
-def display_image(filename):
-	#print('display_image filename: ' + filename)
-	return redirect(url_for('dump',filename=filename))
-
-@app.route('/stegano/enkripsi/display/<filename>')
-def display_video(filename):
-	#print('display_image filename: ' + filename)
-	return redirect(url_for('static', filename='videos/'+filename))
-
 @app.route('/stegano/dekripsi')
 def stego_dekripsi_page():
     return render_template("stego_dec.html")
@@ -186,9 +184,15 @@ def citra_decrypt():
             f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
             if(tipe == "tanpadekripsi"):
                 jawaban = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
+                status = True
             elif(tipe == "dengandekripsi"):
-                ciphernya = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
-                jawaban = rc4.decrypt_text(ciphernya, key)
+                if(key != ''):
+                    ciphernya = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
+                    jawaban = rc4.decrypt_text(ciphernya, key)
+                    status = True
+                else:
+                    flash("Masukkan kunci terlebih dahulu!")
+                    status = False
         elif(f and (allowed_file(f.filename)=="video")):
             filename = secure_filename(f.filename)
             f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
@@ -202,7 +206,7 @@ def citra_decrypt():
                                     key)
                 pesan_rc4 = rc4.decrypt_text(ciphernya, key)
                 jawaban = (pesan_rc4)
-        return render_template('stego_dec.html', filename=filename, jawaban=jawaban, decrypt=True)
+        return render_template('stego_dec.html', filename=filename, jawaban=jawaban, decrypt=status)
 
 @app.route('/stegano/dekripsi/display/<filename>')
 def display_dec_image(filename):
