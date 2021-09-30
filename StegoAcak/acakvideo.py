@@ -14,6 +14,7 @@ from natsort import natsorted
 from os.path import isfile, join
 import pathlib
 from .alat import prima
+from StegoSekuensial import acak_video_seq
 
 #reference:
 # https://github.com/r9ht/Caesar-Cipher-Video-Steganography/blob/a51dae6259192a0fb943215a6c7259a48c574c13/functions.py#L12
@@ -360,6 +361,8 @@ def decrypt(dir, kunci):
             #print(hasil[-5:])
             hasil.append(kandidat)
             k += 1
+    else:
+        acak_video_seq.decrypt(dir)
 
 def decrypt_driver(dir, file_name, kunci):
     try:

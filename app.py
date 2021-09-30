@@ -166,6 +166,27 @@ def citra_encrypt():
                 else:
                     respons = responnya
                     status = True
+            elif(sebaran == "sekuensial"):
+                if(tipe == "tanpaenkripsi"):
+                    responnya = acak_video_seq.encrypt_driver(app.config["UPLOAD_FOLDER"],
+                                        filename, 
+                                        pesan,
+                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                elif(tipe == "denganenkripsi"):
+                    pesan_rc4 = rc4.encrypt_text(pesan, key)
+                    responnya = acakvideo.encrypt_driver(app.config["UPLOAD_FOLDER"],
+                                        filename,
+                                        pesan_rc4, 
+                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                if (responnya == -1):
+                    flash("Maaf! File tidak ada")
+                    status = False
+                elif (responnya == -2):
+                    flash("Cek jumlah panjang pesan, video tidak cukup!")
+                    status = False
+                else:
+                    respons = responnya
+                    status = True
         return render_template('stego_enc.html', filename="enc-"+filename, respons=respons, encrypt=status)
 
 @app.route('/stegano/dekripsi')
@@ -207,16 +228,6 @@ def citra_decrypt():
                 pesan_rc4 = rc4.decrypt_text(ciphernya, key)
                 jawaban = (pesan_rc4)
         return render_template('stego_dec.html', filename=filename, jawaban=jawaban, decrypt=status)
-
-@app.route('/stegano/dekripsi/display/<filename>')
-def display_dec_image(filename):
-	#print('display_image filename: ' + filename)
-	return redirect(url_for('static', filename='images/'+filename))
-
-@app.route('/stegano/dekripsi/display/<filename>')
-def display_dec_video(filename):
-	#print('display_image filename: ' + filename)
-	return redirect(url_for('static', filename='videos/'+filename))
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -191,13 +191,6 @@ def encrypt_driver(file_name, pesan, output):
     print("Extract Video Selesai")
 
     if (encrypt(os.path.join(dir,"temp"), pesan)):
-        print("Extract audionya...")
-        #call(["ffmpeg", "-i", "citra/" + str(file_name), "-q:a", "0", "-map", "a", "temp/audio.mp3", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
-        video = VideoFileClip(os.path.join(dir,file_name))
-        video.audio.write_audiofile('audio.mp3')
-        shutil.move(os.path.join(os.getcwd(),'audio.mp3'), os.path.join(dir, 'audio.mp3'))
-        print("Extract Audio Selesai")
-
         print("Merging Gambarnya...")
         capture = cv2.VideoCapture(os.path.join("citra",str(file_name))) # Stores OG Video into a Capture Window
         fps = capture.get(cv2.CAP_PROP_FPS)
@@ -206,13 +199,20 @@ def encrypt_driver(file_name, pesan, output):
         #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
         print("Merging gambar selesai")
 
+        print("Extract audionya...")
+        #call(["ffmpeg", "-i", "citra/" + str(file_name), "-q:a", "0", "-map", "a", "temp/audio.mp3", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
+        video = VideoFileClip(os.path.join(dir,file_name))
+        video.audio.write_audiofile('audio.mp3')
+        shutil.move(os.path.join(os.getcwd(),'audio.mp3'), os.path.join(dir, "temp","audio.mp3"))
+        print("Extract Audio Selesai")
+
         print("Gabung Video dan Audionya")
         #call(["ffmpeg", "-i", "temp/video.mov", "-i", "temp/audio.mp3", "-codec", "copy","citra/enc-" + str(file_name), "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT)
         print(os.path.join(dir,"temp","video.avi"))
-        print(os.path.join(dir,"audio.mp3"))
+        print(os.path.join(dir,"temp","audio.mp3"))
         call(['ffmpeg',
                 '-i', os.path.join(dir,"temp","video.avi"),
-                '-i', os.path.join(dir,"audio.mp3"),
+                '-i', os.path.join(dir,"temp","audio.mp3"),
                 '-y',
                 '-vcodec', 'copy',
                 '-acodec', 'copy',
