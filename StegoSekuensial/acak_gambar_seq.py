@@ -29,7 +29,7 @@ def changeBit(number, newbit):
         else:
             return number
 
-def encrypt(image, pesan):
+def encrypt(image, pesan, output):
     img = Image.open(image, 'r')
     enc_img = img.copy()
     enc_msg = teksToBiner('s' + pesan + '~#~#!#!#')
@@ -48,8 +48,12 @@ def encrypt(image, pesan):
         if(i+2 < len(enc_msg)):
             newpixelb = changeBit(newpixelb, enc_msg[i + 2])
         enc_img.putpixel((x,y), (newpixelr, newpixelg, newpixelb))
-    enc_img_name = image[:-4] + '_enciphered' + image[-4:]
-    enc_img.save(enc_img_name)
+        print(newpixelr, newpixelg, newpixelb)
+    #enc_img_name = image[:-4] + '_enciphered' + image[-4:]
+    #enc_img.save(enc_img_name)
+    enc_img.convert('RGB').save(output)
+    strnya = "Nilai PSNR adalah:" + str(psnr(image,output))
+    return strnya
 
 def decrypt(image):
     enc_img = Image.open(image, 'r')

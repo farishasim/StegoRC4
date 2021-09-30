@@ -1,6 +1,7 @@
 from flask import *
 from cipher import rc4
 from StegoAcak import acakgambar, acakvideo
+from StegoSekuensial import acak_gambar_seq,acak_video_seq
 from werkzeug.utils import secure_filename
 import urllib.request
 import json
@@ -115,6 +116,18 @@ def citra_encrypt():
                     respons = acakgambar.encrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
                                         pesan_rc4, 
                                         key, 
+                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                    status = True
+            elif(sebaran == "sekuensial"):
+                if(tipe == "tanpaenkripsi"):
+                    respons = acak_gambar_seq.encrypt(os.path.join(app.config["UPLOAD_FOLDER"] ,filename), 
+                                        pesan, 
+                                        os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
+                    status = True
+                elif(tipe == "denganenkripsi"):
+                    pesan_rc4 = rc4.encrypt_text(pesan, key)
+                    respons = acak_gambar_seq.encrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), 
+                                        pesan_rc4,  
                                         os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
                     status = True
             #print('upload_image filename: ' + filename)
