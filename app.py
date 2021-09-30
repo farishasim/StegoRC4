@@ -131,7 +131,7 @@ def citra_encrypt():
                                         os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
                 elif(tipe == "denganenkripsi"):
                     pesan_rc4 = rc4.encrypt_text(pesan, key)
-                    responnnya = acakvideo.encrypt_driver(app.config["UPLOAD_FOLDER"],
+                    responnya = acakvideo.encrypt_driver(app.config["UPLOAD_FOLDER"],
                                         filename,
                                         pesan_rc4, 
                                         key, 
@@ -175,8 +175,7 @@ def citra_decrypt():
                 jawaban = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
             elif(tipe == "dengandekripsi"):
                 ciphernya = acakgambar.decrypt(os.path.join(app.config["UPLOAD_FOLDER"],filename), key)
-                pesan_rc4 = rc4.decrypt_text(ciphernya, key)
-                jawaban = (pesan_rc4)
+                jawaban = rc4.decrypt_text(ciphernya, key)
         elif(f and (allowed_file(f.filename)=="video")):
             filename = secure_filename(f.filename)
             f.save(os.path.join(app.config["UPLOAD_FOLDER"] ,filename))
@@ -187,7 +186,6 @@ def citra_decrypt():
             elif(tipe == "dengandekripsi"):
                 ciphernya = acakvideo.decrypt_driver(app.config["UPLOAD_FOLDER"],
                                     filename, 
-                                    pesan_rc4, 
                                     key)
                 pesan_rc4 = rc4.decrypt_text(ciphernya, key)
                 jawaban = (pesan_rc4)

@@ -50,18 +50,18 @@ def frame_extract(dir, video):
     cv2.destroyAllWindows()
 
 def convert_frames_to_video(pathIn,pathOut,fps):
-    print("pathIn = ",pathIn)
+    #print("pathIn = ",pathIn)
     frame_array = []
     files = [f for f in os.listdir(pathIn) if isfile(join(pathIn, f))]
     #for sorting the file names properly
     files = natsorted(files,reverse=False)
     size = (0,0)
     #files.sort(key = lambda x: int(x[5:-4]))
-    print(files[0])
+    #print(files[0])
     for i in range(len(files)):
         if(pathlib.Path(files[i]).suffix == ".png"):
             filename = pathIn + files[i] 
-            print(filename)
+            #print(filename)
             #reading each files
             img = cv2.imread(filename)
             height, width, layers = img.shape
