@@ -140,7 +140,7 @@ def encrypt(dir, pesan):
     kode = "s" #kode acak
     enc_msg = teksToBiner('s' + pesan + '~#~#!#!#')
     jumlah_frame = len([name for name in os.listdir(dir) if os.path.isfile(os.path.join(dir, name))])
-    if(len(enc_msg)>jumlah_frame):
+    if(len(pesan)>jumlah_frame):
         return (False, '')
     iterator = 0
     psnr_total = 0
@@ -191,6 +191,8 @@ def encrypt_driver(dir, file_name, pesan, output):
     print("Extract Video Selesai")
 
     ada, respons = encrypt(os.path.join(dir,"temp"), pesan)
+    print(ada)
+    print(respons)
     if (ada):
         print("Merging Gambarnya...")
         capture = cv2.VideoCapture(os.path.join(dir,str(file_name))) # Stores OG Video into a Capture Window
