@@ -336,7 +336,7 @@ def decrypt(dir, kunci):
                 if (teksbinary == "11111111"):
                     #print("udah 11111111")
                     frame_selesai == True
-                    return pesan
+                    return pesan[1:]
                     break
                 pesan += chr(int(teksbinary, 2))
                 pesan_per_frame += 1
@@ -362,7 +362,7 @@ def decrypt(dir, kunci):
             hasil.append(kandidat)
             k += 1
     else:
-        acak_video_seq.decrypt(dir)
+        return acak_video_seq.decrypt(dir)
 
 def decrypt_driver(dir, file_name, kunci):
     try:
@@ -374,8 +374,7 @@ def decrypt_driver(dir, file_name, kunci):
     print("Extract Video Selesai")
 
     pesan = decrypt(os.path.join(dir,"temp2"), kunci)
-    pesan2 = pesan[1:]
-    return pesan2
+    return pesan
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter,)

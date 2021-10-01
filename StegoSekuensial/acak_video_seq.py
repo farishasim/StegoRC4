@@ -141,7 +141,7 @@ def encrypt(dir, pesan):
     enc_msg = teksToBiner('s' + pesan + '~#~#!#!#')
     jumlah_frame = len([name for name in os.listdir(dir) if os.path.isfile(os.path.join(dir, name))])
     if(len(enc_msg)>jumlah_frame):
-        return False
+        return (False, '')
     iterator = 0
     psnr_total = 0
     img1 = Image.open(str(dir) +"/" + str(0) + ".png", 'r')
@@ -168,33 +168,34 @@ def encrypt(dir, pesan):
             newpixelb = changeBit(newpixelb, enc_msg[i])
         imgbaru.putpixel((pixelx, pixely), (newpixelr, newpixelg, newpixelb))
         
-        a = cv2.imread(str(dir) +"/" + str(framenumber) + ".png")
         imgbaru.save(str(dir) +"/" + str(framenumber) + ".png", compress_level = 0)
-        if (i % size) == 0 or i == (len(enc_msg) - 1):
+        if((i % size) == 0):
+            a = cv2.imread(str(dir) +"/" + str(framenumber) + ".png")
+        elif(((i % size) == size-1) or i == (len(enc_msg) - 1)):
             b = cv2.imread(str(dir) +"/" + str(framenumber) + ".png")
             psnr_total += psnr(a,b)
     frameterganti = ceil(len(enc_msg) / (3 * size))
-    print("Nilai PSNR Video adalah:", psnr_total//frameterganti)
-    return True
+    strnya = "Nilai PSNR Video adalah: " + str(psnr_total//frameterganti)
+    return (True,strnya)
 
-def encrypt_driver(file_name, pesan, output):
-    dir = os.getcwd()
-    dir = os.path.join(dir, 'citra')
+def encrypt_driver(dir, file_name, pesan, output):
     try:
         open(os.path.join(dir,file_name))
     except IOError:
+        print(os.path.join(dir,file_name))
         print("Maaf! File tidak ada")
-        exit()
+        return -1
 
     print("Extract Videonya...")
     frame_extract(os.path.join(dir,"temp"), os.path.join(dir,file_name))
     print("Extract Video Selesai")
 
-    if (encrypt(os.path.join(dir,"temp"), pesan)):
+    ada, respons = encrypt(os.path.join(dir,"temp"), pesan)
+    if (ada):
         print("Merging Gambarnya...")
-        capture = cv2.VideoCapture(os.path.join("citra",str(file_name))) # Stores OG Video into a Capture Window
+        capture = cv2.VideoCapture(os.path.join(dir,str(file_name))) # Stores OG Video into a Capture Window
         fps = capture.get(cv2.CAP_PROP_FPS)
-        convert_frames_to_video(os.path.join(dir,"temp"),os.path.join(dir,"temp","video.avi"),fps)
+        convert_frames_to_video(os.path.join(dir,"temp/"),os.path.join(dir,"temp","video.avi"),fps)
         #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
         #call(["ffmpeg", "-i", "temp/%d.png" , "-vcodec", "png", "temp/video.avi", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
         print("Merging gambar selesai")
@@ -202,14 +203,11 @@ def encrypt_driver(file_name, pesan, output):
         print("Extract audionya...")
         #call(["ffmpeg", "-i", "citra/" + str(file_name), "-q:a", "0", "-map", "a", "temp/audio.mp3", "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT, shell=True)
         video = VideoFileClip(os.path.join(dir,file_name))
-        video.audio.write_audiofile('audio.mp3')
-        shutil.move(os.path.join(os.getcwd(),'audio.mp3'), os.path.join(dir, "temp","audio.mp3"))
+        video.audio.write_audiofile(os.path.join(dir,"temp","audio.mp3"))
         print("Extract Audio Selesai")
 
         print("Gabung Video dan Audionya")
         #call(["ffmpeg", "-i", "temp/video.mov", "-i", "temp/audio.mp3", "-codec", "copy","citra/enc-" + str(file_name), "-y"],stdout=open(os.devnull, "w"), stderr=STDOUT)
-        print(os.path.join(dir,"temp","video.avi"))
-        print(os.path.join(dir,"temp","audio.mp3"))
         call(['ffmpeg',
                 '-i', os.path.join(dir,"temp","video.avi"),
                 '-i', os.path.join(dir,"temp","audio.mp3"),
@@ -217,19 +215,23 @@ def encrypt_driver(file_name, pesan, output):
                 '-vcodec', 'copy',
                 '-acodec', 'copy',
                 output])
+        return respons
     else:
-        print("Maaf enkripsi gagal, silahkan cek panjang pesan")
+        return -2
 
 def psnr(imageawal,imageakhir):
     rms = np.mean((imageawal - imageakhir) ** 2)
-    return 20*log10(255/rms)
+    if (rms == 0):
+        return 100
+    else:
+        return 20*log10(255/rms)
 
 def decrypt(dir):
     video_frame = [name for name in os.listdir(dir) if os.path.isfile(os.path.join(dir, name))]
     video_frame = file_list_sorted = natsorted(video_frame,reverse=False)
     jumlah_frame = len(video_frame)
 
-    enc_img = video_frame[0]
+    enc_img = Image.open(os.path.join(dir,video_frame[0]),'r')
     biner = ''
     hasil = ''
 
@@ -248,10 +250,11 @@ def decrypt(dir):
     
     typeFlag = chr(int(typeFlag[:-1], 2))
     if(typeFlag == 's'):
+        print("typeFlag =",typeFlag)
         bytez = []
         found = False
         for i in range(jumlah_frame * panjang * lebar):
-            enc_img = video_frame[i // (panjang * lebar)]
+            enc_img = Image.open(os.path.join(dir,video_frame[i // (panjang * lebar)]),'r')
             x = (i % jumlah_frame) // panjang
             y = (i % jumlah_frame) % panjang
             pixel = enc_img.getpixel((x,y))

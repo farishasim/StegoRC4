@@ -174,7 +174,7 @@ def citra_encrypt():
                                         os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
                 elif(tipe == "denganenkripsi"):
                     pesan_rc4 = rc4.encrypt_text(pesan, key)
-                    responnya = acakvideo.encrypt_driver(app.config["UPLOAD_FOLDER"],
+                    responnya = acak_video_seq.encrypt_driver(app.config["UPLOAD_FOLDER"],
                                         filename,
                                         pesan_rc4, 
                                         os.path.join(app.config["UPLOAD_FOLDER"],"enc-"+filename))
@@ -221,13 +221,22 @@ def citra_decrypt():
                 jawaban = acakvideo.decrypt_driver(app.config["UPLOAD_FOLDER"] ,
                                     filename, 
                                     key)
+                if (jawaban == -1):
+                    flash("File Video gagal ditemukan!")
+                    status = False
+                else:
+                    status = True
             elif(tipe == "dengandekripsi"):
                 ciphernya = acakvideo.decrypt_driver(app.config["UPLOAD_FOLDER"],
                                     filename, 
                                     key)
-                pesan_rc4 = rc4.decrypt_text(ciphernya, key)
-                jawaban = (pesan_rc4)
-        return render_template('stego_dec.html', filename=filename, jawaban=jawaban, decrypt=status)
+                if (ciphernya == -1):
+                    flash("File Video gagal ditemukan!")
+                    status = False
+                else:
+                    jawaban = rc4.decrypt_text(ciphernya, key)
+                    status = True
+        return render_template('stego_dec.html', filename=filename, jawaban=jawaban , decrypt=status)
 
 if __name__ == "__main__":
     app.run(debug=True)
